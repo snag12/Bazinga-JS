@@ -2,7 +2,7 @@ Bazinga-JS
 ==========
 
 This is a new framework which in similar to Backbone JS. The objectives of this project is to understand the flow of MV* architecture which backbone implements. This is a basic prototype feel free to clone it start implementing it and let me know if you find any Bug in it.
-
+I have used Underscore framework for genarating a template. There is not such hard dependencies on any other framework like jQuery.
 
 Defining a Model & Collection
 
@@ -27,10 +27,6 @@ Defining a Model & Collection
 	var UserCollection = Buzz.Collection({
 		Models : UserModel
 	});
-
-
-Defining a View
-
 
 var UserView = Buzz.View({
 
@@ -67,11 +63,11 @@ var UserView = Buzz.View({
 		}
 	});
 	
-	Instantiate the classes
+	//Instantiate the classes
 	
 	var userView = new UserView();
 	var users = new UserCollection();
 	var user = new UserModel();
 	
-	I have used Underscore framework for genarating a template. There is not such hard dependencies on any other framework.
+	
 	
