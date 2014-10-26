@@ -226,7 +226,7 @@
 		}
 
 		jsClass.prototype.GetChildElements = function(searchEl, type, selector){
-			if(!selector || !this.Element)
+			if(!selector && !this.Element)
 				return;
 			var eleCollection = [];
 			GetElementsBySel(searchEl, type, eleCollection, (selector || this.Element));
@@ -234,62 +234,45 @@
 		};
 
 		jsClass.prototype.BindEvents = function(parentEl, evntsAry){
-			function AttachEventToElement(eventName, el, method, context, selector) {
-				var childEle = [];
-				if(el.indexOf("#") > -1)
-					childEle = context.GetChildElements(el.replace('#', ''), "ID", selector);
-				else if(el.indexOf(".") > -1)
-					childEle = context.GetChildElements(el.replace('.', ''), "CLASS", selector);
-
-				for(var count=0;count<childEle.length;count++) {
-					if(document.addEventListener)
-						childEle[count].addEventListener(eventName, context[method], false);
-					else
-						childEle[count].attachEvent('on'+eventName, context[method]);
-				}
-			}
-
 			var evts = evntsAry || this.events;
 			var selector = parentEl || this.Element;
 			var self = this;
 			if(evts) {
-				for(var e=0; e<evts.length;e++) {
-					var eventName = evts[e].eventName;
-					var methodName = evts[e].methodName;
-					var el = evts[e].element;
-					var eventNameColl = [], elColl = [];
+				for(var i=0; i<evts.length;i++) {
+					var eventName = evts[i].eventName;
+					var methodName = evts[i].methodName;
+					var el = evts[i].element;
+					var eventNameColl = [], eColl = [];
 					eventNameColl = eventName.split(" ");
-					elColl = el.split(" ");
+					eColl = el.split(" ");
 					
 					for(var evt=0;evt<eventNameColl.length;evt++) {
-						for(var el=0;el<elColl.length;el++) {
-							AttachEventToElement(
-								eventNameColl[evt], elColl[el], methodName, this, selector
-								);
+						for(var e=0;e<eColl.length;e++) {
+							var el = eColl[e];
+							var childEle = [];
+							if(el.indexOf("#") > -1)
+								childEle = this.GetChildElements(el.replace('#', ''), "ID", selector);
+							else if(el.indexOf(".") > -1)
+								childEle = this.GetChildElements(el.replace('.', ''), "CLASS", selector);
+							try {
+								for(var count=0;count<childEle.length;count++) {
+									if(document.addEventListener)
+										childEle[count].addEventListener(
+											eventNameColl[evt], 
+											self[methodName].bind(this), false);
+									else
+										childEle[count].attachEvent(
+											'on'+eventNameColl[evt], 
+											self[methodName].bind(this));
+								}
+							}
+							catch (e) {  }
 						}
 					}
-					
 				}
+				return true;
 			}
-		};
-
-		jsClass.prototype.handleEvent = function(e){
-			e.preventDefault();
-			var evts = this.events;
-			var self = this;
-			if(evts) {
-				for(var i=0; i<evts.length; i++){
-					var methodName = evts[i].methodName;
-					var eventName = evts[i].eventName;
-					var ele = evts[i].element;
-					var cond = eventName == e.type.toString() && 
-						((e.target.id != "" && ele.indexOf(e.target.id) != -1) || 
-						(e.target.className != "" && ele.indexOf(e.target.className) != -1) || 
-						(e.target.type != "" && ele.indexOf(e.target.type.toUpperCase()) != -1 ) );
-					
-					if(cond) self[methodName]();
-				}
-			}
+			return false;
 		};
 
 		jsClass.prototype.TriggerEvents = function(e){
